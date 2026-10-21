@@ -1,0 +1,308 @@
+[
+{
+"company": "Merge Labs",
+"ats": "ashby",
+"slug": "merge",
+"network": "PL"
+},
+{
+"company": "Prime Intellect",
+"ats": "ashby",
+"slug": "primeintellect",
+"network": "PL"
+},
+{
+"company": "Earth Commons",
+"ats": "ashby",
+"slug": "earth",
+"network": "PL"
+},
+{
+"company": "Impossible Cloud Network",
+"ats": "lever",
+"slug": "impossiblecloud",
+"network": "PL"
+},
+{
+"company": "E11 Bio",
+"ats": "lever",
+"slug": "convergentresearch",
+"network": "PL"
+},
+{
+"company": "Animoca Brands",
+"ats": "lever",
+"slug": "animocabrands",
+"network": "PL"
+},
+{
+"company": "Consensys",
+"ats": "ashby",
+"slug": "consensys",
+"network": "PL"
+},
+{
+"company": "SpruceID",
+"ats": "ashby",
+"slug": "spruceid",
+"network": "PL"
+},
+{
+"company": "Netholabs",
+"ats": "ashby",
+"slug": "netholabs",
+"network": "PL"
+},
+{
+"company": "Parasail",
+"ats": "ashby",
+"slug": "parasail",
+"network": "PL"
+},
+{
+"company": "QuickNode",
+"ats": "ashby",
+"slug": "quicknode",
+"network": "PL"
+},
+{
+"company": "Fleek",
+"ats": "ashby",
+"slug": "fleek",
+"network": "PL"
+},
+{
+"company": "Cryptio",
+"ats": "ashby",
+"slug": "cryptio",
+"network": "PL"
+},
+{
+"company": "Butter",
+"ats": "ashby",
+"slug": "butter",
+"network": "PL"
+},
+{
+"company": "Toku",
+"ats": "lever",
+"slug": "toku",
+"network": "PL"
+},
+{
+"company": "bio.xyz",
+"ats": "ashby",
+"slug": "bio",
+"network": "PL"
+},
+{
+"company": "Filecoin Foundation",
+"ats": "greenhouse",
+"slug": "filecoinfoundation",
+"network": "PL"
+},
+{
+"company": "Recall Labs",
+"ats": "greenhouse",
+"slug": "recall",
+"network": "PL"
+},
+{
+"company": "Hemispheric",
+"ats": "greenhouse",
+"slug": "hemispheric",
+"network": "PL"
+},
+{
+"company": "OP Labs",
+"ats": "ashby",
+"slug": "oplabs",
+"network": ""
+},
+{
+"company": "Uniswap Labs",
+"ats": "ashby",
+"slug": "uniswap",
+"network": ""
+},
+{
+"company": "Coinbase",
+"ats": "greenhouse",
+"slug": "coinbase",
+"network": ""
+},
+{
+"company": "MetaMask",
+"ats": "greenhouse",
+"slug": "consensys",
+"network": ""
+},
+{
+"company": "Alchemy",
+"ats": "ashby",
+"slug": "alchemy",
+"network": ""
+},
+{
+"company": "Jito",
+"ats": "lever",
+"slug": "jito",
+"network": ""
+},
+{
+"company": "Offchain Labs",
+"ats": "lever",
+"slug": "offchainlabs",
+"network": ""
+},
+{
+"company": "Arbitrum Foundation",
+"ats": "lever",
+"slug": "arbitrumfoundation",
+"network": ""
+},
+{
+"company": "Aptos Labs",
+"ats": "greenhouse",
+"slug": "aptoslabs",
+"network": ""
+},
+{
+"company": "Mysten Labs",
+"ats": "ashby",
+"slug": "mystenlabs",
+"network": ""
+},
+{
+"company": "Paradigm",
+"ats": "ashby",
+"slug": "paradigm",
+"network": ""
+},
+{
+"company": "a16z",
+"ats": "greenhouse",
+"slug": "a16z",
+"network": ""
+},
+{
+"company": "Ripple",
+"ats": "greenhouse",
+"slug": "ripple",
+"network": ""
+},
+{
+"company": "Circle",
+"ats": "ashby",
+"slug": "circle",
+"network": ""
+},
+{
+"company": "Phantom",
+"ats": "ashby",
+"slug": "phantom",
+"network": ""
+},
+{
+"company": "Magic Eden",
+"ats": "ashby",
+"slug": "magiceden",
+"network": ""
+},
+{
+"company": "Fireblocks",
+"ats": "greenhouse",
+"slug": "fireblocks",
+"network": ""
+},
+{
+"company": "Anchorage Digital",
+"ats": "lever",
+"slug": "anchorage",
+"network": ""
+},
+{
+"company": "Gemini",
+"ats": "greenhouse",
+"slug": "gemini",
+"network": ""
+},
+{
+"company": "Ledger",
+"ats": "ashby",
+"slug": "ledger",
+"network": ""
+},
+{
+"company": "Succinct",
+"ats": "ashby",
+"slug": "succinct",
+"network": ""
+},
+{
+"company": "Espresso Systems",
+"ats": "ashby",
+"slug": "espresso",
+"network": ""
+},
+{
+"company": "Category Labs",
+"ats": "ashby",
+"slug": "category-labs",
+"network": ""
+},
+{
+"company": "LayerZero Labs",
+"ats": "greenhouse",
+"slug": "layerzerolabs",
+"network": ""
+},
+{
+"company": "Ritual",
+"ats": "greenhouse",
+"slug": "ritual",
+"network": ""
+},
+{
+"company": "Dune",
+"ats": "ashby",
+"slug": "dune",
+"network": ""
+},
+{
+"company": "Nansen",
+"ats": "ashby",
+"slug": "nansen",
+"network": ""
+},
+{
+"company": "BitGo",
+"ats": "greenhouse",
+"slug": "bitgo",
+"network": ""
+},
+{
+"company": "Paxos",
+"ats": "ashby",
+"slug": "paxos",
+"network": ""
+},
+{
+"company": "Kalshi",
+"ats": "ashby",
+"slug": "kalshi",
+"network": ""
+},
+{
+"company": "Polymarket",
+"ats": "ashby",
+"slug": "polymarket",
+"network": ""
+},
+{
+"company": "Turnkey",
+"ats": "ashby",
+"slug": "turnkey",
+"network": ""
+}
+]

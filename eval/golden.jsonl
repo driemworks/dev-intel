@@ -1,0 +1,12 @@
+{"id": "rust", "q": "remote senior Rust engineer", "expect": {"match": {"text": "\\brust\\b"}}, "min": 0.6, "goal": "seekers"}
+{"id": "solidity", "q": "Solidity smart contract auditor", "expect": {"match": {"text": "solidity|smart contract|audit"}}, "min": 0.6, "goal": "seekers"}
+{"id": "devrel", "q": "developer relations for a storage network", "expect": {"match": {"title": "devrel|developer (relations|advocate)|ecosystem|community"}}, "min": 0.4, "goal": "seekers"}
+{"id": "compliance", "q": "compliance officer at a crypto exchange", "expect": {"where": {"function": "Legal & Compliance"}}, "min": 0.6, "goal": "seekers"}
+{"id": "design", "q": "product designer for a wallet app", "expect": {"where": {"function": "Design"}}, "min": 0.6, "goal": "seekers"}
+{"id": "llm", "q": "LLM training infrastructure", "expect": {"match": {"text": "llm|language model|training|machine learning"}}, "min": 0.6, "goal": "seekers"}
+{"id": "resume-backend", "q": "Backend engineer, 6 years. Built high-throughput services in Go and Rust on Kubernetes and AWS, Postgres, gRPC. Led migration of a payments ledger; on-call for distributed systems; some Solidity and EVM tooling.", "expect": {"where": {"function": "Engineering"}}, "min": 0.8, "goal": "seekers"}
+{"id": "resume-marketing", "q": "Growth marketer with 5 years in crypto: ran community and content for a DeFi protocol, grew Twitter and Discord to 200k, launched campaigns, partnerships and events, managed a lifecycle email program.", "expect": {"where": {"function": "Marketing"}}, "min": 0.6, "goal": "seekers"}
+{"id": "resume-researcher", "q": "PhD in cryptography. Research on zk-SNARKs, polynomial commitments and MPC; published at CRYPTO and Eurocrypt; implemented provers in Rust.", "expect": {"match": {"text": "cryptograph|zero[- ]knowledge|\\bzk|research"}}, "min": 0.6, "goal": "seekers"}
+{"id": "pl-roles", "kind": "count", "where": {"network": "PL"}, "expect": {"match": {"title": "."}}, "min": 100}
+{"id": "no-catchalls", "kind": "records", "expect": {"match": {"title": "general application|open application|pitch us|expression of interest"}}, "max_pct": 0, "goal": "seekers"}
+{"id": "has-body", "kind": "records", "expect": {"not": {"match": {"body": "[\\s\\S]{300}"}}}, "max_pct": 2, "goal": "seekers"}

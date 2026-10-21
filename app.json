@@ -1,0 +1,79 @@
+{
+ "app": "fellowship",
+ "name": "Fellowship",
+ "description": "Open roles across the Protocol Labs network and web3, searchable by meaning and matchable to your resume.",
+ "network": "baseSepolia",
+ "site": {
+  "project": "fellowship",
+  "account": "2e0a41ed3fec719d427dfae6512efddf",
+  "examples": [
+   "remote senior Rust engineer",
+   "Solidity smart contract auditor",
+   "developer relations for a storage network",
+   "zero-knowledge proving engineer",
+   "compliance at a crypto exchange",
+   "product designer for a wallet",
+   "LLM training infrastructure"
+  ]
+ },
+ "tags": [
+  "jobs",
+  "careers",
+  "web3",
+  "Protocol Labs",
+  "hiring"
+ ],
+ "types": {
+  "fellowship.job.v1": {
+   "description": "One open role at a Protocol Labs network team or web3 company, read from the company's own public job board (Ashby, Lever or Greenhouse): its title, company, location, remote or onsite, function, seniority, skills named in the posting, pay where posted, and the full description.",
+   "role_map": {
+    "identity": "job_id",
+    "title": "title",
+    "subtitle": "company",
+    "temporal": "posted",
+    "media": "url",
+    "tags": [
+     "function",
+     "seniority",
+     "remote",
+     "company",
+     "network",
+     "skills"
+    ],
+    "text": [
+     "text"
+    ]
+   },
+   "presentation": {
+    "externalUrl": {
+     "fellowship.job.v1": "{url}"
+    },
+    "types": {
+     "fellowship.job.v1": {
+      "icon": "\ud83d\udcbc",
+      "singular": "role",
+      "plural": "roles"
+     }
+    },
+    "facets": [
+     "function",
+     "seniority",
+     "remote",
+     "network",
+     "company"
+    ]
+   }
+  }
+ },
+ "sources": [
+  {
+   "namespace": "jobs",
+   "command": [
+    "python3",
+    "sources/boards.py",
+    "--output-dir",
+    ".ship/stage/jobs"
+   ]
+  }
+ ]
+}
