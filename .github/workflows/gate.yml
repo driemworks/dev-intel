@@ -1,0 +1,19 @@
+# A PR that changes how roles are made (the source, the recipe, the questions) is built
+# locally and graded before it can merge. Nothing here touches chain or Cloudflare.
+name: gate
+on:
+  pull_request:
+    paths: [app.json, "sources/**", "eval/**"]
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci && npm i -g @fangorn-network/sdk@2026.10.21-dev
+      - uses: actions/cache@v4
+        with: { path: ~/.cache/fangorn-mcp/models, key: models-q8 }
+      - run: npx westmarch-ship app.json --local /tmp/view --crawl
+      - run: npx westmarch-eval /tmp/view

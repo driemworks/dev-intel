@@ -1,0 +1,39 @@
+# Daily: read every board, publish the snapshot, deploy, then grade the live view.
+# New roles always ship; a failing grade turns the run red (GitHub emails the owner).
+name: ship
+on:
+  schedule: [{ cron: "17 13 * * *" }]
+  workflow_dispatch:
+concurrency: { group: ship, cancel-in-progress: false }
+jobs:
+  ship:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      # ponytail: the owner key; a separate authorized publisher wallet when this becomes the template
+      ETH_PRIVATE_KEY: ${{ secrets.ETH_PRIVATE_KEY }}
+      PINATA_JWT: ${{ secrets.PINATA_JWT }}
+      PINATA_GATEWAY: ${{ vars.PINATA_GATEWAY }}
+      FANGORN_IPFS_GATEWAY: ${{ vars.PINATA_GATEWAY }}   # westmarch reads the view through it; it does not read PINATA_GATEWAY
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci && npm i -g @fangorn-network/sdk@2026.10.21-dev
+      - id: ship
+        run: |
+          echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+          npx westmarch-ship app.json
+      - name: wait for the Worker's indexer
+        run: |
+          url=$(jq -r .url .ship/state.json)
+          for i in $(seq 60); do
+            at=$(curl -fs "$url/view/cdn/catalog" | jq -r '.generated_at // 0')
+            [ "$at" -gt "${{ steps.ship.outputs.start }}" ] && exit 0
+            sleep 15
+          done
+          echo "::error::the view was not re-indexed within 15 minutes"; exit 1
+      - uses: actions/cache@v4
+        with: { path: ~/.cache/fangorn-mcp/models, key: models-embeddinggemma }
+      - run: npx westmarch-eval "$(jq -r .url .ship/state.json)/view"
