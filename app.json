@@ -1,0 +1,38 @@
+{
+ "app": "dev-intel-test-0",
+ "name": "dev-intel-test-0",
+ "description": "One sentence: what is in here, and who it is for.",
+ "network": "baseSepolia",
+ "site": {
+  "project": "dev-intel-test-0",
+  "examples": []
+ },
+ "tags": [],
+ "types": {
+  "dev-intel-test-0.item.v1": {
+   "description": "One item: what a record is, in the words a searcher would use.",
+   "role_map": {
+    "identity": "id",
+    "title": "title",
+    "tags": [
+     "tags"
+    ],
+    "text": [
+     "text"
+    ]
+   },
+   "presentation": {
+    "types": {
+     "dev-intel-test-0.item.v1": {
+      "singular": "item",
+      "plural": "items"
+     }
+    },
+    "facets": [
+     "tags"
+    ]
+   }
+  }
+ },
+ "sources": []
+}
