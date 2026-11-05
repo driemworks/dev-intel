@@ -10,7 +10,9 @@
    "why only allowlisted publishers",
    "upload to ipfs without pinata"
   ],
-  "account": "0beaeb0776ca9e8404297afe0da73e5a"
+  "account": "0beaeb0776ca9e8404297afe0da73e5a",
+  "pages": "pages",
+  "skill": "plugin/skills/dev-intel/SKILL.md"
  },
  "tags": [
   "agents",

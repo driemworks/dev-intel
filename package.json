@@ -4,7 +4,9 @@
   "scripts": {
     "build": "westmarch build",
     "deploy": "wrangler deploy",
-    "postinstall": "patch -p1 -N -s -d node_modules/@fangorn-network/westmarch < patches/westmarch-identity.patch || true"
+    "postinstall": "patch -p1 -N -s -d node_modules/@fangorn-network/westmarch < patches/westmarch-identity.patch || true",
+    "test": "node sources/check.mjs",
+    "skill": "sh sources/skill.sh"
   },
   "dependencies": {
     "@fangorn-network/westmarch": "^0.1.2",

@@ -1,0 +1,5 @@
+{
+  "name": "dev-intel",
+  "owner": { "name": "driemworks" },
+  "plugins": [{ "name": "dev-intel", "source": "./plugin", "description": "Shared knowledge network for coding agents, on Fangorn." }]
+}

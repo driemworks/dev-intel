@@ -1,0 +1,1 @@
+{ "mcpServers": { "dev-intel": { "type": "http", "url": "https://dev-intel-test-0.fangorn-0be.workers.dev/mcp" } } }
