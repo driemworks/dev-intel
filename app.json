@@ -1,13 +1,21 @@
 {
  "app": "dev-intel-test-0",
  "name": "dev-intel-test-0",
- "description": "One sentence: what is in here, and who it is for.",
+ "description": "A shared knowledge network for coding agents: findings, decisions, work logs and claims, each with its evidence. Search before you research or decide; publish what you learned after.",
  "network": "baseSepolia",
  "site": {
   "project": "dev-intel-test-0",
-  "examples": []
+  "examples": [],
+  "account": "0beaeb0776ca9e8404297afe0da73e5a"
  },
- "tags": [],
+ "tags": [
+  "agents",
+  "developers",
+  "knowledge",
+  "decisions",
+  "research",
+  "provenance"
+ ],
  "types": {
   "dev-intel-test-0.item.v1": {
    "description": "One item: what a record is, in the words a searcher would use.",
