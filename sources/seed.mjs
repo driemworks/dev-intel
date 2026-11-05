@@ -112,7 +112,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (!existsSync(join(cwd, ".fangorn/repo.json"))) cli("repo", "init", a.namespace);
     const file = join(cwd, "records.json");
     writeFileSync(file, JSON.stringify({ records: records.map((r) => ({ id: r.id, type: TYPE, payload: r.payload })) }));
-    cli("commit", file, "-m", `${records.length} statements`);
+    cli("commit", file);
     cli("push");
   }
 }
