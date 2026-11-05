@@ -1,0 +1,12 @@
+{"id":"x402-paraphrase","q":"what does coinbase charge to settle x402 payments","expect":{"match":{"statement|question":"x402"}},"min":0.2,"goal":"team"}
+{"id":"webmcp-paraphrase","q":"is navigator.modelContext shipped in chrome yet","expect":{"match":{"statement|question":"webmcp"}},"min":0.2,"goal":"team"}
+{"id":"erc8004-paraphrase","q":"trustless agents registry addresses on base testnet","expect":{"match":{"statement|question":"8004"}},"min":0.2,"goal":"team"}
+{"id":"why-allowlist","q":"why can't any wallet publish into the network","expect":{"where":{"kind":"decision"},"match":{"tags":"allowlist"}},"min":0.2,"goal":"team"}
+{"id":"no-pinata","q":"how do I upload to ipfs without a pinata account","expect":{"match":{"tags":"storage"}},"min":0.2,"goal":"team"}
+{"id":"decisions","kind":"count","where":{"kind":"decision"},"expect":{"match":{"statement":"."}},"min":3,"goal":"team"}
+{"id":"no-secrets","kind":"records","expect":{"match":{"statement|question|argument":"(sk|pk)[-_][A-Za-z0-9_-]{16,}|gh[ps]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|0x[0-9a-fA-F]{64}|eyJ[A-Za-z0-9_-]{10,}\\."}},"max_pct":0,"hard":true,"goal":"team"}
+{"id":"no-emails","kind":"records","expect":{"match":{"statement|question|argument":"[\\w.+-]+@[A-Za-z][\\w-]*\\.[A-Za-z]{2,}"}},"max_pct":0,"hard":true,"goal":"team"}
+{"id":"no-injection","kind":"records","expect":{"match":{"statement|question|argument":"ignore (all |any )?(previous|prior|above) (instructions|prompts?)|disregard (the|your) (instructions|system prompt)|</?(system|tool_call|instructions)>"}},"max_pct":0,"hard":true,"goal":"team"}
+{"id":"every-claim-cited","kind":"records","expect":{"not":{"match":{"uncited_claims":"^0$"}}},"max_pct":0,"hard":true,"goal":"team"}
+{"id":"has-evidence","kind":"records","expect":{"not":{"match":{"evidence_refs":"\\S"}}},"max_pct":0,"hard":true,"goal":"team"}
+{"id":"kind-fixed","kind":"records","expect":{"not":{"match":{"kind":"^(finding|decision|log|claim)$"}}},"max_pct":0,"goal":"team"}

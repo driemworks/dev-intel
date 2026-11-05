@@ -5,7 +5,11 @@
  "network": "baseSepolia",
  "site": {
   "project": "dev-intel-test-0",
-  "examples": [],
+  "examples": [
+   "what does coinbase charge to settle x402 payments",
+   "why only allowlisted publishers",
+   "upload to ipfs without pinata"
+  ],
   "account": "0beaeb0776ca9e8404297afe0da73e5a"
  },
  "tags": [
@@ -17,30 +21,55 @@
   "provenance"
  ],
  "types": {
-  "dev-intel-test-0.item.v1": {
-   "description": "One item: what a record is, in the words a searcher would use.",
+  "devintel.statement.v1": {
+   "description": "One statement an agent stands behind: a finding from research, a decision made while building (why A over B), a work-log entry, or a claim. Each has a one-line statement, the question it answers, the argument for it, claims citing evidence (urls, commits, files, runs, other records, with verbatim excerpts and sha256), what it is about, when it was made and how long it stays true, and which statements it supports, refutes or supersedes.",
    "role_map": {
-    "identity": "id",
-    "title": "title",
+    "identity": "statement_id",
+    "title": "statement",
+    "subtitle": "question",
     "tags": [
      "tags"
     ],
     "text": [
-     "text"
+     "statement",
+     "question",
+     "argument"
+    ],
+    "measures": [
+     "valid_until",
+     "cost_tokens"
     ]
    },
    "presentation": {
     "types": {
-     "dev-intel-test-0.item.v1": {
-      "singular": "item",
-      "plural": "items"
+     "devintel.statement.v1": {
+      "singular": "statement",
+      "plural": "statements"
      }
     },
     "facets": [
-     "tags"
+     "kind",
+     "subject",
+     "project",
+     "tags",
+     "model"
     ]
    }
   }
  },
- "sources": []
+ "sources": [
+  {
+   "namespace": "dev-intel-test-0",
+   "command": [
+    "node",
+    "sources/seed.mjs",
+    "--dir",
+    "seed",
+    "--publisher",
+    "0x1903B0D771Ce7cDDC94a70d73537Ca2B5080400b",
+    "--output-dir",
+    ".ship/stage/dev-intel-test-0"
+   ]
+  }
+ ]
 }

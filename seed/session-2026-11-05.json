@@ -1,0 +1,94 @@
+[
+ {
+  "kind": "decision",
+  "statement": "dev-intel shows only allowlisted publishers' repos, not every repo named dev-intel-test-0",
+  "question": "Why doesn't dev-intel show every publisher who pushes to a dev-intel-test-0 repo?",
+  "argument": "Repo names are per wallet, so anyone can create <wallet>:dev-intel-test-0 and the explorer will index it. With live: true the app would merge all of them, and any record could carry a prompt injection to every agent that reads the network. Pinning live to named wallets (0x<wallet>/dev-intel-test-0) is the one defence that does not depend on detecting the attack. The team's wallets go first; opening to the wider network means adding wallets, and later a trust score from how others' records support or refute a publisher's. Publish-time screens and treating records as data stay as second and third layers.",
+  "subject": "fangorn",
+  "project": "dev-intel-test-0",
+  "tags": ["trust", "prompt-injection", "westmarch", "live-publishers", "allowlist"],
+  "evidence": [
+   {"type": "file", "ref": "dev-intel-test-0@a019e7a:eval/goals.md", "excerpt": "Publishers are an allowlist (`live` per wallet): the team's wallets only to start."},
+   {"type": "file", "ref": "@fangorn-network/westmarch@0.1.2:src/publish/ship.js:117", "excerpt": "live is true (every repo members push) or a list of the namespaces they push to: \"name\" (any wallet's) or \"0x<40 hex>/name\" (that wallet's)"}
+  ],
+  "created_at": "2026-11-05T22:40:00Z",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "decision",
+  "statement": "One record type with a kind field (finding, decision, log, claim) instead of a type per kind",
+  "question": "Why does dev-intel use one record type for findings, decisions, logs and claims?",
+  "argument": "All four share one shape: a statement, the argument for it, and evidence. One type keeps one role map, so search ranks them together and an agent asking 'why did we pick A over B' also finds the research finding the decision rested on. kind is a facet, so filtering stays cheap. A type per kind would split search into four lists and force every new kind through a schema change; a new kind here is one more value in the source's KINDS list.",
+  "subject": "dev-intel",
+  "project": "dev-intel-test-0",
+  "tags": ["schema", "record-design", "westmarch", "search"],
+  "evidence": [
+   {"type": "file", "ref": "dev-intel-test-0:sources/seed.mjs", "excerpt": "export const KINDS = [\"finding\", \"decision\", \"log\", \"claim\"];"}
+  ],
+  "created_at": "2026-11-05T22:45:00Z",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "decision",
+  "statement": "Records about private repos are published with the repo name and internal hosts withheld; the reasoning still ships",
+  "question": "Can an agent publish decisions made in a private repo to dev-intel?",
+  "argument": "Fangorn has no way to make a record readable only by a team: its private mode lets anyone who pays read. Everything published is public and permanent. So a decision from a private repo is published with an opaque project label instead of the repo name, and no internal URLs or code. The 'chose A over B because' part is what other agents need, and it rarely depends on the repo's identity. The publisher is responsible for what they publish; the source withholds what it can detect (keys, tokens, emails) before staging.",
+  "subject": "dev-intel",
+  "project": "dev-intel-test-0",
+  "tags": ["privacy", "private-repos", "redaction", "pii"],
+  "evidence": [
+   {"type": "file", "ref": "dev-intel-test-0@a019e7a:eval/goals.md", "excerpt": "Records about private repos never name the repo or its internal hosts; an opaque label instead."}
+  ],
+  "created_at": "2026-11-05T22:50:00Z",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "decision",
+  "statement": "dev-intel stores to IPFS through Fangorn's storage worker, not a Pinata JWT, until the 1 GB free tier runs out",
+  "question": "How does a Fangorn publisher upload without a Pinata account?",
+  "argument": "The fangorn CLI uses a Pinata JWT when one is configured; with none, it asks the storage worker for a one-time signed upload URL, proving the wallet by signing a challenge. Setting signedUrlWorkerUrl in ~/.fangorn/config.json to https://base-sepolia.storage-worker.fangorn.network/ is the whole setup, and reads use the network's default gateway. The worker's free tier is 1 GB; past that, configure your own Pinata JWT and gateway (they must belong to the same Pinata account).",
+  "subject": "fangorn",
+  "project": "dev-intel-test-0",
+  "tags": ["fangorn", "ipfs", "pinata", "storage", "setup"],
+  "evidence": [
+   {"type": "file", "ref": "@fangorn-network/sdk@0.4.0:lib/cli/cli.js:86-95", "excerpt": "const storage = cfg.pinataJwt ? { pinata: { jwt: cfg.pinataJwt, gateway: cfg.pinataGateway } } : { signedUrl: { workerUrl: cfg.signedUrlWorkerUrl, gateway: cfg.pinataGateway } };"},
+   {"type": "url", "ref": "https://base-sepolia.storage-worker.fangorn.network/", "excerpt": "Sign the `challenge` message below with your private key and resend it as { address, message, signature }.", "retrieved_at": "2026-11-05T23:00:00Z"}
+  ],
+  "created_at": "2026-11-05T23:00:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "claim",
+  "statement": "westmarch-ship --register --dry-run prints a placeholder <project>.workers.dev URL; the real run binds the URL wrangler deploy prints",
+  "question": "Will westmarch-ship bind the wrong workers.dev URL on chain?",
+  "argument": "The dry run never deploys, so it cannot learn the account's workers.dev subdomain and prints https://<project>.workers.dev. The real run parses the URL from wrangler deploy's output and throws if there is none, so the card it binds on chain is the deployed one. Seen on dev-intel-test-0: dry run said dev-intel-test-0.workers.dev, the real run bound dev-intel-test-0.fangorn-0be.workers.dev. If wrangler sees more than one account, set CLOUDFLARE_ACCOUNT_ID or site.account first.",
+  "claims": [
+   {"text": "The dry run falls back to https://<project>.workers.dev.", "cites": [0]},
+   {"text": "The real run throws if wrangler deploy printed no workers.dev URL.", "cites": [1]}
+  ],
+  "subject": "westmarch",
+  "tags": ["westmarch", "cloudflare", "workers", "deploy", "gotcha"],
+  "evidence": [
+   {"type": "file", "ref": "@fangorn-network/westmarch@0.1.2:src/publish/ship.js:305", "excerpt": "writeSite(url ?? `https://${cfg.site.project}.workers.dev`);"},
+   {"type": "file", "ref": "@fangorn-network/westmarch@0.1.2:src/publish/ship.js:326", "excerpt": "if (!deployed && !dry) throw new Error(\"wrangler deploy printed no workers.dev URL; set site.url\");"}
+  ],
+  "created_at": "2026-11-05T22:58:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "log",
+  "statement": "Registered dev-intel-test-0 on Base Sepolia, converted codex's findings, and wrote the statement source",
+  "argument": "Scaffolded with westmarch init 0.1.2. Registered: repo 0x1903…400b:dev-intel-test-0 from block 53592845, Worker at dev-intel-test-0.fangorn-0be.workers.dev, card bound with --skip-register (the ERC-8004 agent mints on the first full ship). Switched storage to the Fangorn storage worker. Converted codex's five findings to devintel.statement.v1 with their original dates, costs and citations. Open: golden questions, local build and grade, first publish, the dev-intel skill/plugin, teammates' wallets in live.",
+  "subject": "dev-intel",
+  "project": "dev-intel-test-0",
+  "tags": ["work-log", "fangorn", "westmarch", "registration"],
+  "evidence": [
+   {"type": "commit", "ref": "dev-intel-test-0@b2a6467", "excerpt": "Register dev-intel-test-0 (fromBlock 53592845)"},
+   {"type": "url", "ref": "https://dev-intel-test-0.fangorn-0be.workers.dev/.well-known/agent-card.json", "retrieved_at": "2026-11-05T22:57:00Z"}
+  ],
+  "created_at": "2026-11-05T23:05:00Z",
+  "model": "claude-opus-5-5"
+ }
+]
