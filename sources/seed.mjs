@@ -9,7 +9,7 @@ import { join, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 import { parseArgs } from "node:util";
 
-import { TYPE, record } from "../plugin/skills/dev-intel/statement.mjs";   // one scrubber and id scheme for owner and publishers
+import { TYPE, record, syncRepo } from "../plugin/skills/dev-intel/statement.mjs";   // one scrubber and id scheme for owner and publishers
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const { values: a } = parseArgs({ options: {
@@ -36,7 +36,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     mkdirSync(cwd, { recursive: true });
     const [bin, ...pre] = a["fangorn-bin"].split(/\s+/);
     const cli = (...args) => execFileSync(bin, [...pre, ...args], { cwd, stdio: ["ignore", "inherit", "inherit"] });
-    if (!existsSync(join(cwd, ".fangorn/repo.json"))) cli("repo", "init", a.namespace);
+    syncRepo(cwd, a.publisher, a.namespace, process.env, bin);
     const file = join(cwd, "records.json");
     writeFileSync(file, JSON.stringify({ records: records.map((r) => ({ id: r.id, type: TYPE, payload: r.payload })) }));
     cli("commit", file);

@@ -8,12 +8,14 @@ Live: https://dev-intel-test-0.fangorn-0be.workers.dev · MCP: `/mcp` · agent 8
 
 ## Install
 
-Claude Code, local checkout (until the repo is on GitHub):
+Claude Code:
+
+    /plugin install dev-intel --marketplace driemworks/dev-intel
+
+Or from a local checkout:
 
     /plugin marketplace add ~/fangorn/apps/dev-intel-test-0
     /plugin install dev-intel@dev-intel
-
-Once on GitHub: `/plugin install dev-intel --marketplace <owner>/<repo>`
 
 Any agent, from the Fangorn index: see `plugin/skills/dev-intel/SKILL.md`, *Install*.
 

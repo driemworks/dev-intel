@@ -4,7 +4,7 @@
 // draft.json: one statement or an array (shape in SKILL.md). Publishing is public and permanent,
 // and at your own risk: this withholds what it can detect, and you are responsible for the rest.
 // Also imported by the app's seed source, so the owner's records pass the same checks.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from "node:fs";
 import { join, basename } from "node:path";
 import { homedir, userInfo, hostname } from "node:os";
 import { spawnSync } from "node:child_process";
@@ -107,6 +107,19 @@ export function deprivatize(d, { repo, owner, words }, publicRepo) {
   return out;
 }
 
+/** Bring the local copy of <owner>:<ns> in `cwd` to the on-chain tip before committing: another copy
+ *  (the app's .ship/repo, another machine, `fangorn card`) may have pushed since. Creates the repo if new. */
+export function syncRepo(cwd, owner, ns, env = process.env, bin = "fangorn") {
+  const run = (...a) => spawnSync(bin, a, { cwd, env, encoding: "utf8" });
+  if (existsSync(join(cwd, ".fangorn/repo.json"))) {
+    if (/up to date/.test(run("status").stdout ?? "")) return;
+    rmSync(join(cwd, ".fangorn"), { recursive: true, force: true });
+  }
+  if (run("clone", owner, ns).status === 0) return;
+  const init = spawnSync(bin, ["repo", "init", ns], { cwd, env, stdio: "inherit" });   // a new repo: one transaction
+  if (init.status) throw new Error(`fangorn repo init ${ns} failed`);
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2), flag = (f) => args.includes(f);
   const file = args.find((a) => !a.startsWith("--"));
@@ -124,7 +137,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const repo = join(homedir(), ".dev-intel");   // one repo per wallet
   mkdirSync(repo, { recursive: true });
   const cli = (...a) => { const r = spawnSync("fangorn", a, { cwd: repo, env, stdio: "inherit" }); if (r.status) die(`fangorn ${a[0]} failed`); };
-  if (!existsSync(join(repo, ".fangorn/repo.json"))) cli("repo", "init", NAMESPACE);   // once: a transaction
+  try { syncRepo(repo, who, NAMESPACE, env); } catch (e) { die(e.message); }
   writeFileSync(join(repo, "records.json"), JSON.stringify({ records: records.map((r) => ({ id: r.id, type: TYPE, payload: r.payload })) }));
   cli("commit", join(repo, "records.json"));   // upserts by id; never --replace
   cli("push");
