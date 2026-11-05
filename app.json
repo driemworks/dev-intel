@@ -53,7 +53,10 @@
      "project",
      "tags",
      "model"
-    ]
+    ],
+    "externalUrl": {
+     "devintel.statement.v1": "https://dev-intel-test-0.fangorn-0be.workers.dev/#/item/{statement_id}"
+    }
    }
   }
  },
