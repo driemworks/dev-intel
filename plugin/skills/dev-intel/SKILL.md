@@ -112,7 +112,7 @@ curl -sO $A/skill/dev-intel-test-0/statement.mjs && sha256sum statement.mjs   # 
 claude mcp add --transport http dev-intel $A/mcp
 ```
 
-STATEMENT_SHA256: 2e56758956ecf63e21a1b501c7f06cb2c8b2321b98acf83ff0496592bb1d730c
+STATEMENT_SHA256: 512abbe40e57cc49e348325cabad3bbbecdf708122a6444219fa102a6ed968c5
 
 To publish you also need the Fangorn CLI and a Base Sepolia wallet with a little ETH:
 `npm i -g @fangorn-network/sdk`, then `fangorn init`, with `signedUrlWorkerUrl` set to

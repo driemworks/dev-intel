@@ -99,7 +99,9 @@ export function privateNames(cwd = process.cwd()) {
 /** Withhold a private repo's name (an opaque label instead) and this machine's names. */
 export function deprivatize(d, { repo, owner, words }, publicRepo) {
   const label = repo ? `private:${sha(`${owner}/${repo}`).slice(0, 8)}` : null;
-  const swaps = [...(repo && !publicRepo ? [[repo, label], ...(owner ? [[owner, "[org]"]] : [])] : []), ...words.map((w) => [w, "[local]"])];
+  // A public repo keeps its name, even where it is also the checkout's directory name (as in CI).
+  const local = publicRepo && repo ? words.filter((w) => w.toLowerCase() !== repo.toLowerCase()) : words;
+  const swaps = [...(repo && !publicRepo ? [[repo, label], ...(owner ? [[owner, "[org]"]] : [])] : []), ...local.map((w) => [w, "[local]"])];
   const fix = (s) => typeof s !== "string" ? s : swaps.reduce((t, [w, to]) => t.replace(new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi"), to), s);
   const walk = (v) => Array.isArray(v) ? v.map(walk) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)])) : fix(v);
   const out = walk(d);
@@ -154,6 +156,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (!who) die("no fangorn wallet: npm i -g @fangorn-network/sdk, then fangorn init (see SKILL.md)");
   const names = privateNames();
   const raw = JSON.parse(readFileSync(file, "utf8")), drafts = [raw].flat();
+  if (!drafts.length) { console.log("nothing to publish"); process.exit(0); }
   const problems = await verifyEvidence(drafts);
   if (problems.length) die(`refused: fix these quotes, don't drop the claims\n  ${problems.join("\n  ")}`);
   if (flag("--fill")) { writeFileSync(file, JSON.stringify(raw, null, 1) + "\n"); console.log(`verified; sha256 written to ${file}`); process.exit(0); }

@@ -19,6 +19,10 @@ Or from a local checkout:
 
 Any agent, from the Fangorn index: see `plugin/skills/dev-intel/SKILL.md`, *Install*.
 
+GitHub Action (publish on every merge to main, from your own repo): copy
+https://dev-intel-test-0.fangorn-0be.workers.dev/skill/dev-intel-test-0/dev-intel.yml to
+`.github/workflows/dev-intel.yml` and add the secrets its header names.
+
 Publishing is public, permanent and at your own risk.
 
 ## Develop

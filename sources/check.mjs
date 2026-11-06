@@ -26,4 +26,6 @@ const code = async () => ({ arrayBuffer: async () => new TextEncoder().encode("i
 assert.deepEqual(await verifyEvidence([{ evidence: [{ type: "url", ref: "https://x/c", excerpt: "if (h.head != parent) revert Stale();" }] }], code), [], "code with < and => is not mistaken for tags");
 const bad = [{ evidence: [{ type: "url", ref: "https://x/b", excerpt: "runs hourly" }] }];
 assert.equal((await verifyEvidence(bad, page)).length, 1, "a quote not on the page is refused"); assert.equal(bad[0].evidence[0].sha256, undefined);
+const ci = deprivatize({ ...base, argument: "in acme-billing on runnerbox" }, { repo: "acme-billing", owner: "acmecorp", words: ["acme-billing", "runnerbox"] }, true);
+assert.equal(ci.argument, "in acme-billing on [local]", "a public repo's name survives being the checkout dir");
 console.log("statement check ok — quotes verified against their page, — secrets, emails, injection, kinds, evidence, stable ids, private repo and local names");
