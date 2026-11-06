@@ -16,3 +16,9 @@
 {"id":"wiki-where","q":"is filtering by a field exact or fuzzy","expect":{"match":{"tags":"\\bwhere\\b"}},"min":0.2,"goal":"wiki"}
 {"id":"wiki-eval","q":"how do I stop an agent's change from making search worse","expect":{"match":{"tags":"westmarch-eval"}},"min":0.2,"goal":"wiki"}
 {"id":"wiki-pinned","kind":"records","of":{"match":{"tags":"fangorn-wiki"}},"expect":{"not":{"match":{"evidence_refs":"githubusercontent\\.com/[^/ ]+/[^/ ]+/[0-9a-f]{40}/"}}},"max_pct":0,"hard":true,"goal":"wiki"}
+{"id":"wiki-stale-push","q":"I pushed from an old checkout and the transaction reverted","expect":{"match":{"tags":"StaleStateRoot"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-env-key","q":"my CI sets a private key env var but commits come from another wallet","expect":{"match":{"tags":"\\bconfig\\b"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-onchain","q":"how much of my data is stored on the blockchain","expect":{"match":{"tags":"on-chain"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-gasless","q":"can a relayer submit commits so publishers don't need ETH","expect":{"match":{"tags":"updateBySig"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-replace-card","q":"after a snapshot publish my app's agent card stopped resolving","expect":{"match":{"tags":"\\breplace\\b"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-addresses","q":"data registry contract address base sepolia","expect":{"match":{"tags":"addresses"}},"min":0.2,"goal":"wiki"}
