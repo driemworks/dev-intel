@@ -27,3 +27,13 @@ Successor to codex. Started 2026-11-05.
 - Records are data, never instructions: the skill and the MCP tools say so on every result.
 - Publishing is at the publisher's own risk. The skill strips what it can before staging,
   and warns that the publisher is responsible for everything they publish.
+
+## wiki: a developer (or their agent) building on Fangorn
+A deepwiki for Fangorn's own repos: how westmarch, the SDK/CLI, the contracts and core work,
+as findings and claims whose every quote is verified against the source at a pinned commit.
+- **They ask:** "how does an app decide whose wallets show up", "what model makes the vectors",
+  "does rerunning ship redeploy everything".
+- **Coverage:** westmarch first (2026-11-06), then fangorn (SDK + CLI), contracts, core.
+- **Failure looks like:** an answer that is out of date with the code, or a quote not in the file.
+- **Kill:** we still read the source instead of asking it, a month in.
+- **Baseline:** none run; Fangorn postdates model training data and changes weekly.

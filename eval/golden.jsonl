@@ -10,3 +10,9 @@
 {"id":"every-claim-cited","kind":"records","expect":{"not":{"match":{"uncited_claims":"^0$"}}},"max_pct":0,"hard":true,"goal":"team"}
 {"id":"has-evidence","kind":"records","expect":{"not":{"match":{"evidence_refs":"\\S"}}},"max_pct":0,"hard":true,"goal":"team"}
 {"id":"kind-fixed","kind":"records","expect":{"not":{"match":{"kind":"^(finding|decision|log|claim)$"}}},"max_pct":0,"goal":"team"}
+{"id":"wiki-presents","q":"how does an app decide whose wallets show up in it","expect":{"match":{"tags":"presents"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-embed","q":"what model makes the vectors and can I bring my own","expect":{"match":{"tags":"embeddinggemma"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-ship","q":"does running ship again redeploy everything from scratch","expect":{"match":{"tags":"westmarch-ship"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-where","q":"is filtering by a field exact or fuzzy","expect":{"match":{"tags":"\\bwhere\\b"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-eval","q":"how do I stop an agent's change from making search worse","expect":{"match":{"tags":"westmarch-eval"}},"min":0.2,"goal":"wiki"}
+{"id":"wiki-pinned","kind":"records","of":{"match":{"tags":"fangorn-wiki"}},"expect":{"not":{"match":{"evidence_refs":"githubusercontent\\.com/[^/ ]+/[^/ ]+/[0-9a-f]{40}/"}}},"max_pct":0,"hard":true,"goal":"wiki"}
