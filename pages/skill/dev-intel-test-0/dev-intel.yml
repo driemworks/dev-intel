@@ -31,6 +31,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash             # -o pipefail: a failed publish piped through tee must fail the run
+
 concurrency:
   group: dev-intel          # one publish at a time: two would race the repo's on-chain head
   cancel-in-progress: false
@@ -39,6 +43,9 @@ env:
   APP: https://dev-intel-test-0.fangorn-0be.workers.dev
   SKILL_SHA256: c45a2d14ef30866aa54a56d874eaf5430cab21c87890250517ed72146506b5cc
   STATEMENT_SHA256: 512abbe40e57cc49e348325cabad3bbbecdf708122a6444219fa102a6ed968c5
+  # Reads go through this gateway; ipfs.io answers GitHub's runners with 429s. Set the repo
+  # variable PINATA_GATEWAY to your own gateway if you have one.
+  PINATA_GATEWAY: ${{ vars.PINATA_GATEWAY || 'https://gateway.pinata.cloud' }}
 
 jobs:
   publish:
