@@ -22,6 +22,8 @@ assert.equal(pub.argument, "on [local]", "this machine's names go either way");
 const page = async () => ({ arrayBuffer: async () => new TextEncoder().encode("// the  cron\n// runs <b>every</b> few minutes").buffer });
 const good = [{ evidence: [{ type: "url", ref: "https://x/a", excerpt: "the cron runs every few minutes" }] }];
 assert.deepEqual(await verifyEvidence(good, page), []); assert.match(good[0].evidence[0].sha256, /^[0-9a-f]{64}$/, "a quote on the page is pinned");
+const code = async () => ({ arrayBuffer: async () => new TextEncoder().encode("if (a < b) x();\nmapping(address => uint) m;\nif (h.head != parent) revert Stale();").buffer });
+assert.deepEqual(await verifyEvidence([{ evidence: [{ type: "url", ref: "https://x/c", excerpt: "if (h.head != parent) revert Stale();" }] }], code), [], "code with < and => is not mistaken for tags");
 const bad = [{ evidence: [{ type: "url", ref: "https://x/b", excerpt: "runs hourly" }] }];
 assert.equal((await verifyEvidence(bad, page)).length, 1, "a quote not on the page is refused"); assert.equal(bad[0].evidence[0].sha256, undefined);
 console.log("statement check ok — quotes verified against their page, — secrets, emails, injection, kinds, evidence, stable ids, private repo and local names");

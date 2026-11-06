@@ -1,0 +1,284 @@
+[
+ {
+  "kind": "finding",
+  "subject": "fangorn-contracts",
+  "project": "fangorn-network/contracts",
+  "tags": [
+   "fangorn",
+   "contracts",
+   "data-registry",
+   "on-chain",
+   "fangorn-wiki"
+  ],
+  "question": "What does Fangorn actually store on chain?",
+  "statement": "Almost nothing: the DataRegistry holds one head per repo (publisher, name) plus an update log; the data itself is content-addressed off chain",
+  "argument": "A repo is (publisher, repo name). The DataRegistry stores each repo's position and head, where the head is the sha256 digest of the commit's dag-cbor block, which the contract computes itself from (epoch, parent, root, repo, car). Records, the record tree and the CAR live off chain in IPFS. Every update is also appended to a Merkle mountain range kept as its peaks, so the log has a single root (logRoot). The contracts are upgradeable (UUPS proxies) with append-only storage.",
+  "claims": [
+   {
+    "text": "The DataRegistry holds the heads of every repo and their update log.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "A repo is (publisher, repo): one publisher's data under a name it chooses.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "The head is the sha256 digest of the commit's dag-cbor block, computed by the contract.",
+    "cites": [
+     0
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/DataRegistry.sol",
+    "excerpt": "The heads of every repo, and their update log.",
+    "sha256": "51206ee494b8dd09754c8a5ad9e20aa53b0b382db3806a6c1bec7704afa728ca",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/DataRegistry.sol",
+    "excerpt": "A repo is `(publisher, repo)`: one publisher's data under a name it chooses.",
+    "sha256": "51206ee494b8dd09754c8a5ad9e20aa53b0b382db3806a6c1bec7704afa728ca",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/DataRegistry.sol",
+    "excerpt": "contract computes: the sha256 digest of the commit's dag-cbor block.",
+    "sha256": "51206ee494b8dd09754c8a5ad9e20aa53b0b382db3806a6c1bec7704afa728ca",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:40:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "claim",
+  "subject": "fangorn-contracts",
+  "project": "fangorn-network/contracts",
+  "tags": [
+   "fangorn",
+   "contracts",
+   "push",
+   "StaleStateRoot",
+   "gotcha",
+   "fangorn-wiki"
+  ],
+  "question": "What happens if I push from a stale copy of a Fangorn repo?",
+  "statement": "A push whose parent is not the repo's current head reverts with StaleStateRoot: a stale working copy can't overwrite newer commits, it just fails",
+  "argument": "DataRegistry._update rejects any update whose parent differs from the stored head, and that same check is the replay protection for signed updates. So two working copies of one repo can't clobber each other on chain: the one that is behind fails at push. Re-clone (fangorn clone <owner> <repo>) and recommit. Updates also carry an epoch that must be within a window of the current one (EpochOutOfWindow).",
+  "claims": [
+   {
+    "text": "An update whose parent isn't the current head reverts with StaleStateRoot.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "The parent check is the replay protection for signed updates.",
+    "cites": [
+     1
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/DataRegistry.sol",
+    "excerpt": "if (h.head != parent) revert StaleStateRoot();",
+    "sha256": "51206ee494b8dd09754c8a5ad9e20aa53b0b382db3806a6c1bec7704afa728ca",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/DataRegistry.sol",
+    "excerpt": "The parent check is its replay protection.",
+    "sha256": "51206ee494b8dd09754c8a5ad9e20aa53b0b382db3806a6c1bec7704afa728ca",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:40:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "claim",
+  "subject": "fangorn-contracts",
+  "project": "fangorn-network/contracts",
+  "tags": [
+   "fangorn",
+   "contracts",
+   "updateBySig",
+   "relayer",
+   "gasless",
+   "fangorn-wiki"
+  ],
+  "question": "Can someone else pay gas to push my Fangorn commit?",
+  "statement": "Yes: DataRegistry.updateBySig takes the publisher's EIP-712 signature, so anyone may submit the update",
+  "argument": "Besides update (sent by the publisher), the DataRegistry has updateBySig, which verifies the publisher's EIP-712 signature over the update and accepts it from any sender. A relayer or an app can therefore pay gas for a publisher. Replays are blocked by the parent check: once a head moves, the same signed update no longer applies.",
+  "claims": [
+   {
+    "text": "updateBySig takes the publisher's EIP-712 signature, so anyone may submit it.",
+    "cites": [
+     0
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/DataRegistry.sol",
+    "excerpt": "`updateBySig` takes the publisher's EIP-712 signature, so anyone may submit it.",
+    "sha256": "51206ee494b8dd09754c8a5ad9e20aa53b0b382db3806a6c1bec7704afa728ca",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:40:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "fangorn-contracts",
+  "project": "fangorn-network/contracts",
+  "tags": [
+   "fangorn",
+   "contracts",
+   "settlement-registry",
+   "paid",
+   "semaphore",
+   "fangorn-wiki"
+  ],
+  "question": "How does Fangorn's SettlementRegistry sell read access?",
+  "statement": "SettlementRegistry sells access to a repo or one record on publisher-signed terms: register pays and adds a Semaphore commitment, settle proves membership for a reader",
+  "argument": "A subject is (publisher, keccak256(repo name), key), key zero meaning the whole repo. register pays the terms' price (an ERC-3009 authorization) and adds the buyer's Semaphore commitment to the subject's group, giving a referrer the publisher hasn't denied a share. settle takes a membership proof with the reader as its message and marks that reader settled, once per payment, so the reader can't be linked to the payer on chain. Raising a repo's generation voids every terms signed before it.",
+  "claims": [
+   {
+    "text": "It sells read access to a repo, or one record of it, on terms its publisher signs.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "register pays the price and adds a Semaphore commitment to the subject's group.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "Raising a repo's generation voids every terms signed for it before.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/SettlementRegistry.sol",
+    "excerpt": "Sells read access to a repo, or to one record of it, on terms its publisher signs.",
+    "sha256": "cdf7f86c5d631801516a8e6a55c7359bb19909497f728afcee244f3a5203a6b0",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/SettlementRegistry.sol",
+    "excerpt": "register  pays the terms' price and adds a Semaphore commitment to the subject's",
+    "sha256": "cdf7f86c5d631801516a8e6a55c7359bb19909497f728afcee244f3a5203a6b0",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/src/SettlementRegistry.sol",
+    "excerpt": "Raising a repo's generation voids every terms signed for it before.",
+    "sha256": "cdf7f86c5d631801516a8e6a55c7359bb19909497f728afcee244f3a5203a6b0",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:40:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "fangorn-contracts",
+  "project": "fangorn-network/contracts",
+  "tags": [
+   "fangorn",
+   "contracts",
+   "addresses",
+   "base-sepolia",
+   "fangorn-wiki"
+  ],
+  "question": "What are Fangorn's contract addresses on Base Sepolia?",
+  "statement": "Base Sepolia: DataRegistry 0x0F3eb0E62CF610dbaC6B3aD4Bf4cE38Ab50EBCC5, SettlementRegistry 0x61A5A195B54F57ada786Ba6689CdB04553cf7fBc; upgradeable, unaudited",
+  "argument": "The contracts README and the SDK's network config agree on the current Base Sepolia deployment. Both are UUPS proxies, so the addresses stay fixed across upgrades; older deployments under deployed/84532 are abandoned. The code is not audited. The SDK's default RPC is base-sepolia-rpc.publicnode.com, not sepolia.base.org, which caps eth_getLogs at 200 blocks.",
+  "claims": [
+   {
+    "text": "The README lists DataRegistry 0x0F3eb0E62CF610dbaC6B3aD4Bf4cE38Ab50EBCC5.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "The SDK config uses the same SettlementRegistry address.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "The code is not audited.",
+    "cites": [
+     2
+    ]
+   },
+   {
+    "text": "sepolia.base.org caps eth_getLogs at 200 blocks, so the SDK uses another RPC.",
+    "cites": [
+     3
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/README.md",
+    "excerpt": "| DataRegistry | `0x0F3eb0E62CF610dbaC6B3aD4Bf4cE38Ab50EBCC5` |",
+    "sha256": "24455f2572c14be94763fcf9d72c0ede52e49a1c0b530a09bacb129c976dce2e",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/config.ts",
+    "excerpt": "\"0x61A5A195B54F57ada786Ba6689CdB04553cf7fBc\",",
+    "sha256": "e6bec5b69cf6847b726370ff5cba2928a6a8d8b323a902321d390665b023fcb9",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/contracts/2bd7e4bb183e930c1f28de7b4caff4ada4514593/README.md",
+    "excerpt": "This code is not audited.",
+    "sha256": "24455f2572c14be94763fcf9d72c0ede52e49a1c0b530a09bacb129c976dce2e",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/config.ts",
+    "excerpt": "Not sepolia.base.org: it caps eth_getLogs at 200 blocks",
+    "sha256": "e6bec5b69cf6847b726370ff5cba2928a6a8d8b323a902321d390665b023fcb9",
+    "retrieved_at": "2026-11-06T00:10:42Z"
+   }
+  ],
+  "valid_for": "P30D",
+  "created_at": "2026-11-06T01:40:00Z",
+  "model": "claude-opus-5-5"
+ }
+]

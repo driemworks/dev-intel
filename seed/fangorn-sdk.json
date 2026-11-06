@@ -1,0 +1,420 @@
+[
+ {
+  "kind": "finding",
+  "subject": "fangorn",
+  "project": "fangorn-network/fangorn",
+  "tags": [
+   "fangorn",
+   "cli",
+   "repo",
+   "commit",
+   "push",
+   "fangorn-wiki"
+  ],
+  "question": "How do Fangorn repos work: what is the difference between commit and push?",
+  "statement": "A Fangorn repo is a local .fangorn/ directory like .git/: commit moves HEAD locally (permissionless), push settles that tip as the on-chain state root (permissioned)",
+  "argument": "The fangorn CLI is modelled on git. A working copy is a .fangorn/ directory recording which on-chain dataset it tracks and the CID of the local tip commit. fangorn commit builds a new commit on HEAD from a records file or the staging area; nothing touches the chain. fangorn push compares HEAD with the on-chain tip and settles it as the new state root in one transaction from the owner's wallet. Two working copies of one repo can diverge: one that is behind will build on a stale parent, so clone or check status before committing from a second copy.",
+  "claims": [
+   {
+    "text": "commit moves HEAD locally and is permissionless; push reconciles HEAD with the on-chain ref and is permissioned.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "push settles the local tip commit as the on-chain state root.",
+    "cites": [
+     1
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/repo/index.ts",
+    "excerpt": "`commit` moves HEAD locally (permissionless). `push` reconciles HEAD with the on-chain ref (the permissioned step).",
+    "sha256": "ccb74919f9b492092b3eb55713a22880ec1bb0e016038126082a982c88d89b3b",
+    "retrieved_at": "2026-11-06T00:09:34Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/cli/cli.ts",
+    "excerpt": "Settle the local tip commit as the on-chain state root (the permissioned step)",
+    "sha256": "58b46ac07cd9a17bd43a6ab013d985f49c2ec8f96271ded550c4b0a7d4057b99",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:10:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "claim",
+  "subject": "fangorn",
+  "project": "fangorn-network/fangorn",
+  "tags": [
+   "fangorn",
+   "cli",
+   "commit",
+   "replace",
+   "gotcha",
+   "fangorn-wiki"
+  ],
+  "question": "Does fangorn commit --replace keep the repo's @card record?",
+  "statement": "fangorn commit --replace starts from an empty state, so it drops every record the file omits, @card included; plain commit upserts by id",
+  "argument": "Without --replace, a commit's puts replace records with the same id and leave the rest. With --replace the new state starts empty, so the file becomes the repo's entire contents. @card is an ordinary record in the repo (CARD_RECORD), so a snapshot publish into an app's own repo that leaves it out unbinds the app's card. Publish into an app repo without --replace, or include @card in the file.",
+  "claims": [
+   {
+    "text": "With replace, the new state starts as an empty map.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "@card is a record id in the repo.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "--replace means omitted entries are removed.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/engine/index.ts",
+    "excerpt": "const state = opts.replace ? new Map<string, CID>() : new Map(old.state);",
+    "sha256": "b4ea6e69660a210c61c91ff70df1eeccb50f49ede2aefef5b33122a3ffd06f61",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/fangorn.ts",
+    "excerpt": "export const CARD_RECORD = \"@card\";",
+    "sha256": "5d6611e7ce48d77176cc505c48910388649bd196bd3c8f52490cf1901ae8e6ce",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/cli/cli.ts",
+    "excerpt": "Snapshot semantics: the file replaces the namespace's previous contents (omitted entries are removed)",
+    "sha256": "58b46ac07cd9a17bd43a6ab013d985f49c2ec8f96271ded550c4b0a7d4057b99",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:10:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "claim",
+  "subject": "fangorn",
+  "project": "fangorn-network/fangorn",
+  "tags": [
+   "fangorn",
+   "cli",
+   "config",
+   "wallet",
+   "gotcha",
+   "fangorn-wiki"
+  ],
+  "question": "Why does the fangorn CLI ignore my ETH_PRIVATE_KEY?",
+  "statement": "When ~/.fangorn/config.json exists the CLI signs with its key and ignores ETH_PRIVATE_KEY; only CHAIN_NAME from the environment still applies",
+  "argument": "loadConfig reads the config file first and returns as soon as it exists: the key, Pinata JWT, gateway and worker all come from it, and the chain is CHAIN_NAME if set, else the file's chainName. The environment variables (ETH_PRIVATE_KEY, PINATA_JWT, ...) are only read when there is no config file, and then only ETH_PRIVATE_KEY is required. So a CI job or a second wallet set through the environment silently signs as the config file's wallet; check with fangorn wallet.",
+  "claims": [
+   {
+    "text": "The config file is checked first.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "With a config file, the chain is CHAIN_NAME if set, else the stored chainName.",
+    "cites": [
+     1
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/cli/cli.ts",
+    "excerpt": "if (existsSync(CONFIG_PATH)) {",
+    "sha256": "58b46ac07cd9a17bd43a6ab013d985f49c2ec8f96271ded550c4b0a7d4057b99",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/cli/cli.ts",
+    "excerpt": "cfg: network(envChain ?? stored.chainName),",
+    "sha256": "58b46ac07cd9a17bd43a6ab013d985f49c2ec8f96271ded550c4b0a7d4057b99",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:10:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "fangorn",
+  "project": "fangorn-network/fangorn",
+  "tags": [
+   "fangorn",
+   "ipfs",
+   "storage",
+   "pinata",
+   "setup",
+   "fangorn-wiki"
+  ],
+  "question": "How do I publish to Fangorn without a Pinata account?",
+  "statement": "Newer Fangorn SDKs upload through the network's hosted storage worker by default when no Pinata JWT is set; no signedUrlWorkerUrl setup is needed",
+  "argument": "With no Pinata JWT, the client uses signed upload URLs from a hosted worker. On the current SDK the worker URL defaults to the network's own (Base Sepolia: base-sepolia.storage-worker.fangorn.network), so setting signedUrlWorkerUrl is only needed for another worker; reads use the network's IPFS gateway. Older CLIs (0.4.0) need signedUrlWorkerUrl set in ~/.fangorn/config.json. Without any config at all, the CLI warns that uploads go to Fangorn's shared Pinata account and may be unpinned without notice.",
+  "claims": [
+   {
+    "text": "The worker URL falls back to the network's configured signedUrlWorker.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "Base Sepolia's configured worker is base-sepolia.storage-worker.fangorn.network.",
+    "cites": [
+     1
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/fangorn.ts",
+    "excerpt": "nonBlank(storage.signedUrl.workerUrl) ?? nonBlank(config.signedUrlWorker);",
+    "sha256": "5d6611e7ce48d77176cc505c48910388649bd196bd3c8f52490cf1901ae8e6ce",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/config.ts",
+    "excerpt": "signedUrlWorker: \"https://base-sepolia.storage-worker.fangorn.network\",",
+    "sha256": "e6bec5b69cf6847b726370ff5cba2928a6a8d8b323a902321d390665b023fcb9",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   }
+  ],
+  "supersedes": [
+   "devintel:decision:1791fe8fdcdca5db"
+  ],
+  "created_at": "2026-11-06T01:10:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "fangorn",
+  "project": "fangorn-network/fangorn",
+  "tags": [
+   "fangorn",
+   "paid",
+   "encryption",
+   "x402",
+   "key-server",
+   "fangorn-wiki"
+  ],
+  "question": "How are paid fields sealed and sold on Fangorn?",
+  "statement": "Paid fields are encrypted per record under keys derived from one repo key per statement; the repo key is deposited sealed to a key server that stores nothing",
+  "argument": "fangorn commit --paid <fields> --price <usdc> seals those payload fields (gadget field-v1) and signs the terms. Everything sold is sealed under a statement binding the chain, SettlementRegistry, publisher, repo and generation: one random repo key per statement, a key per record derived from it, each field encrypted with the statement, record and field name as associated data. The publisher deposits the repo key once, sealed to a key server. A buyer the registry lets read a record gets that record's key; the key server recomputes the statement from its own chain view, so a deposit made for anything else does not unseal. Paid content must never also sit in a public field.",
+  "claims": [
+   {
+    "text": "One random repo key per statement, each record's key derived from it.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "The key server stores nothing.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "--paid seals the named payload fields and prices them with signed terms.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/crypto/paid.ts",
+    "excerpt": "One random repo key per statement; each record's key is derived from it;",
+    "sha256": "d4132bbfa06a351180e30b93f04cb988313c982097098ee3f7b3550778139e05",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/crypto/paid.ts",
+    "excerpt": "The key server stores nothing:",
+    "sha256": "d4132bbfa06a351180e30b93f04cb988313c982097098ee3f7b3550778139e05",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/cli/cli.ts",
+    "excerpt": "Comma-separated payload fields to sell: sealed (field-v1) and priced with signed terms",
+    "sha256": "58b46ac07cd9a17bd43a6ab013d985f49c2ec8f96271ded550c4b0a7d4057b99",
+    "retrieved_at": "2026-11-06T00:09:35Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:10:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "fangorn",
+  "project": "fangorn-network/fangorn",
+  "tags": [
+   "fangorn",
+   "erc-8004",
+   "agent-card",
+   "fangorn card",
+   "fangorn-wiki"
+  ],
+  "question": "How does fangorn card register an app as an ERC-8004 agent, and how do I update it?",
+  "statement": "fangorn card commits the repo's @card and mints an ERC-8004 agent on Base Sepolia's identity registry; --update <agentId> refreshes it without minting, --skip-register only commits @card",
+  "argument": "fangorn card <cardUrl> points the repo's @card record at the agent card and registers the card with the ERC-8004 identity registry (Base Sepolia: 0x8004A818BFB912233c491871b3d84c89A494BD9e), pinning a registration file in agent0-sdk's format. Rerunning it bare mints another agent. --update <agentId> writes a new registration file and points the existing agent at it with setAgentURI, minting nothing; --skip-register only commits @card for a card already registered.",
+  "claims": [
+   {
+    "text": "The Base Sepolia identity registry is 0x8004A818BFB912233c491871b3d84c89A494BD9e.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "--update writes a new registration file via setAgentURI and mints nothing.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "--skip-register only commits the @card record.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/erc8004.ts",
+    "excerpt": "84532: \"0x8004A818BFB912233c491871b3d84c89A494BD9e\",",
+    "sha256": "bd950c8ef0356f9c73b21124af1c7a5ed245cff63447037370d02a0d99f6684e",
+    "retrieved_at": "2026-11-06T00:09:36Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/cli/cli.ts",
+    "excerpt": "a new registration file, pointed to by setAgentURI; mints nothing",
+    "sha256": "58b46ac07cd9a17bd43a6ab013d985f49c2ec8f96271ded550c4b0a7d4057b99",
+    "retrieved_at": "2026-11-06T00:09:36Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/cli/cli.ts",
+    "excerpt": "Only commit the @card record, for a card already registered with ERC-8004",
+    "sha256": "58b46ac07cd9a17bd43a6ab013d985f49c2ec8f96271ded550c4b0a7d4057b99",
+    "retrieved_at": "2026-11-06T00:09:36Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:10:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "claim",
+  "subject": "fangorn",
+  "project": "fangorn-network/fangorn",
+  "tags": [
+   "fangorn",
+   "cli",
+   "reset",
+   "history",
+   "fangorn-wiki"
+  ],
+  "question": "Does fangorn reset delete a repo's history?",
+  "statement": "fangorn reset empties a repo with one commit of the empty state on its head; history and old records stay reachable",
+  "argument": "reset builds a commit with no records and replace on top of the current head, then pushes it. The head never goes back to zero, and the new head still names the old records as history, so reset is not a way to remove something published: anything committed stays retrievable.",
+  "claims": [
+   {
+    "text": "History stays and the old records are still named as history.",
+    "cites": [
+     0
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/fangorn.ts",
+    "excerpt": "History stays (a head never goes back to zero), and so do the old records: the new head still names them as history.",
+    "sha256": "5d6611e7ce48d77176cc505c48910388649bd196bd3c8f52490cf1901ae8e6ce",
+    "retrieved_at": "2026-11-06T00:09:36Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:10:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "claim",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "fromBlock",
+   "agent-card",
+   "gotcha",
+   "fangorn-wiki"
+  ],
+  "question": "Is a westmarch app's card fromBlock the block its repo was created in?",
+  "statement": "westmarch-ship's fromBlock defaults to the network's deployment block, not the app repo's creation block, despite the comment saying the repo's block",
+  "argument": "ship.js documents that the repo's first block becomes the card's fromBlock, but it sets state.fromBlock from app.json's fromBlock or, failing that, FangornConfig.fromBlock: the Fangorn deployment's starting block (53592845 on Base Sepolia). dev-intel-test-0's state.json shows exactly that value. Scanning from the deployment block is safe (nothing is missed) but slower for readers; set fromBlock in app.json before registering for a tighter one.",
+  "claims": [
+   {
+    "text": "state.fromBlock falls back to FangornConfig.fromBlock.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "Base Sepolia's configured fromBlock is 53592845.",
+    "cites": [
+     1
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/ship.js",
+    "excerpt": "state.fromBlock ??= String(cfg.fromBlock ?? FangornConfig.fromBlock);",
+    "sha256": "54f160ce992cd9f929b39ceb60ab8bf889c7b21ff68596cc334ae1b82fb36a0e",
+    "retrieved_at": "2026-11-06T00:09:36Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/fangorn/fea40d4d32091bfea6e61cf826acde84734896bc/src/config.ts",
+    "excerpt": "fromBlock: 53592845n,",
+    "sha256": "e6bec5b69cf6847b726370ff5cba2928a6a8d8b323a902321d390665b023fcb9",
+    "retrieved_at": "2026-11-06T00:09:36Z"
+   }
+  ],
+  "created_at": "2026-11-06T01:10:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ }
+]

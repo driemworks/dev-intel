@@ -108,7 +108,7 @@ export function deprivatize(d, { repo, owner, words }, publicRepo) {
 }
 
 // Whitespace, tags and line-comment markers ignored, so a quote may wrap across comment lines.
-const flat = (s) => s.replace(/^[ \t]*(?:\/\/+|#+|\*+)[ \t]?/gm, "").replace(/<[^>]+>/g, " ").replace(/&nbsp;|&#160;/g, " ").replace(/\s+/g, " ").trim();
+const flat = (s) => s.replace(/^[ \t]*(?:\/\/+|#+|\*+)[ \t]?/gm, "").replace(/<\/?[a-zA-Z][^<>\n]*>/g, " ").replace(/&nbsp;|&#160;/g, " ").replace(/\s+/g, " ").trim();
 /** Every url excerpt must be on its page as fetched: fills sha256 + retrieved_at, returns the problems.
  *  Evidence that already has a sha256 was checked when it was written, and is skipped. */
 export async function verifyEvidence(drafts, fetchFn = fetch) {
