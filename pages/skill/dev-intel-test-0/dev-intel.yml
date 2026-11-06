@@ -35,7 +35,6 @@ env:
   APP: https://dev-intel-test-0.fangorn-0be.workers.dev
   SKILL_SHA256: c45a2d14ef30866aa54a56d874eaf5430cab21c87890250517ed72146506b5cc
   STATEMENT_SHA256: 512abbe40e57cc49e348325cabad3bbbecdf708122a6444219fa102a6ed968c5
-  DI: ${{ github.workspace }}/../dev-intel
 
 jobs:
   publish:
@@ -52,6 +51,8 @@ jobs:
 
       - name: Fetch dev-intel's skill and statement.mjs (pinned)
         run: |
+          DI="$RUNNER_TEMP/dev-intel"   # a plain absolute path: agents mis-resolve "..", and SKILL.md went unread
+          echo "DI=$DI" >> "$GITHUB_ENV"
           mkdir -p "$DI" && cd "$DI"
           curl -fsS "$APP/skill/dev-intel-test-0/SKILL.md" -o SKILL.md
           curl -fsS "$APP/skill/dev-intel-test-0/statement.mjs" -o statement.mjs
