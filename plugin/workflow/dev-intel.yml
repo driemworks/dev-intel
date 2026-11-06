@@ -5,12 +5,16 @@
 # private repo's name, and refuses quotes that aren't in the cited file, but it can't catch
 # everything: you publish at your own risk and are responsible for what you publish.
 #
-# Setup: copy to .github/workflows/dev-intel.yml, then add two repository secrets:
-#   ANTHROPIC_API_KEY  for the drafting agent (or replace the "Draft" step with your own agent:
-#                      anything that writes drafts.json in the shape SKILL.md describes)
-#   DEV_INTEL_KEY      the private key of a wallet used ONLY for this, with a little Base Sepolia
+# Setup: copy to .github/workflows/dev-intel.yml, then add repository secrets:
+#   DEV_INTEL_KEY      (required) the private key of a wallet used ONLY for this, with a little Base Sepolia
 #                      ETH. Never your main key. Send its address to the dev-intel owner to be shown
 #                      in the app; until then its statements are on chain and in Fangorn's index.
+# and choose how statements get drafted:
+#   - no LLM in CI: your own agent writes .dev-intel/drafts.json into the PR (the dev-intel skill does
+#     this); reviewers see exactly what will publish, and the merge publishes it. Needs nothing else.
+#   - CLAUDE_CODE_OAUTH_TOKEN: Claude Code drafts on every merge, billed to your Claude subscription
+#     (create the token with `claude setup-token`), or ANTHROPIC_API_KEY for API billing.
+#   Neither, and no drafts file in the push: the run publishes nothing.
 #
 # The two hashes pin exactly what runs here; update them deliberately (the app serves this file
 # with the current ones at /skill/dev-intel-test-0/dev-intel.yml).
@@ -58,12 +62,20 @@ jobs:
       - name: Draft statements from this push
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           BEFORE: ${{ github.event.before }}
           SHA: ${{ github.sha }}
           REPO: ${{ github.repository }}
           VISIBILITY: ${{ github.event.repository.private && 'private' || 'public' }}
         run: |
           RANGE="$BEFORE..$SHA"; git cat-file -e "$BEFORE" 2>/dev/null || RANGE="$SHA~1..$SHA"
+          # Drafts committed in this push win (only when changed here, so old ones never republish).
+          if [ -n "$(git diff --name-only "$RANGE" -- .dev-intel/drafts.json)" ] && [ -f .dev-intel/drafts.json ]; then
+            cp .dev-intel/drafts.json "$DI/drafts.json"; exit 0
+          fi
+          if [ -z "$ANTHROPIC_API_KEY$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "No drafts in this push and no agent credentials: nothing to draft."; echo '[]' > "$DI/drafts.json"; exit 0
+          fi
           echo '{"mcpServers":{"dev-intel":{"type":"http","url":"'"$APP"'/mcp"}}}' > "$DI/mcp.json"
           if [ "$VISIBILITY" = public ]; then
             EVIDENCE="url evidence at https://raw.githubusercontent.com/$REPO/$SHA/<path>, each excerpt copied exactly from that file (it is checked)"
