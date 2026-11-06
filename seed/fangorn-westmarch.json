@@ -1,0 +1,431 @@
+[
+ {
+  "kind": "finding",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "westmarch-ship",
+   "deploy",
+   "fangorn-wiki"
+  ],
+  "question": "What does westmarch-ship do, step by step?",
+  "statement": "westmarch-ship turns one app.json into a live Fangorn app: repo, sources published, site and card, Worker deployed, ERC-8004 agent; rerunning it is how you update",
+  "argument": "westmarch-ship is the single command behind a Fangorn app. On the first run it creates the owner's repo <wallet>:<app>, whose block becomes the card's fromBlock. It then runs each source, which crawls and publishes straight into the app; writes the stock page, the agent card and _headers into .ship/site; deploys one Cloudflare Worker (R2 bucket, Workers AI, a cron, and CONFIG carrying app.json's schema); and finally mints the ERC-8004 agent and points the repo's @card at the card. Nothing is embedded locally: the Worker's cron picks up what was published within minutes. Every step compares against the chain or Cloudflare first and only acts on a difference, so the same command is both first deploy and update.",
+  "claims": [
+   {
+    "text": "Every step checks the chain or Cloudflare first and acts only on a difference, so rerunning is how you update.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "The first run creates the app's repo, and that block becomes the card's fromBlock.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "The last step registers the ERC-8004 agent and points the repo's @card at the card.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/ship.js",
+    "excerpt": "Every step checks the chain (or Cloudflare) first and only acts on a difference, so re-running is how you update.",
+    "sha256": "54f160ce992cd9f929b39ceb60ab8bf889c7b21ff68596cc334ae1b82fb36a0e",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/ship.js",
+    "excerpt": "(first run only; that block becomes the card's fromBlock)",
+    "sha256": "54f160ce992cd9f929b39ceb60ab8bf889c7b21ff68596cc334ae1b82fb36a0e",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/ship.js",
+    "excerpt": "5. register the ERC-8004 agent and point the repo's @card at the card, if it points elsewhere",
+    "sha256": "54f160ce992cd9f929b39ceb60ab8bf889c7b21ff68596cc334ae1b82fb36a0e",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   }
+  ],
+  "created_at": "2026-11-06T00:30:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "erc-8004",
+   "register",
+   "fangorn-wiki"
+  ],
+  "question": "Why doesn't westmarch-ship --register mint the ERC-8004 agent?",
+  "statement": "--register binds the card but defers the ERC-8004 mint to the first full ship, because the mint snapshots the card's skills once and is never redone",
+  "argument": "--register is the fast path run before there is data: it creates the repo, deploys an empty site and points @card at the card URL, but does not mint the agent. The ERC-8004 registration file copies the card's skills into IPFS once, so minting an app that does nothing yet would freeze an empty description. The mint therefore waits for the first full ship. .ship/state.json records agentPending until then.",
+  "claims": [
+   {
+    "text": "The mint copies the card's skills into its registration file once and waits for the first full ship.",
+    "cites": [
+     0
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/ship.js",
+    "excerpt": "The mint copies the card's skills into its IPFS registration file and is never redone, so it waits for the first full ship, when the card lists what the app does.",
+    "sha256": "54f160ce992cd9f929b39ceb60ab8bf889c7b21ff68596cc334ae1b82fb36a0e",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   }
+  ],
+  "created_at": "2026-11-06T00:31:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "live-publishers",
+   "presents",
+   "trust",
+   "fangorn-wiki"
+  ],
+  "question": "How does a Fangorn app choose which publishers' repos it shows?",
+  "statement": "An app presents repos named as 0x<owner>/<repo> (one publisher's) or a bare name (any publisher's); sources are pinned to the owner, and live adds what members push",
+  "argument": "The view is built from every repo the app presents. A source's namespace is presented pinned to the owner's wallet; app.json's live adds namespaces other wallets push to, either as a bare name (any wallet's repo of that name) or as 0x<wallet>/<name> (only that wallet's). live: true, or an app with no sources and no live, presents every repo. Pinning live to named wallets is how an app keeps strangers' records (and any prompt injection in them) out of its search. Caveat: the view is documented to drop a repo the app stops presenting, but in westmarch 0.1.2 a repo whose name the build does not cover is kept, so an app registered before it had sources keeps every repo the cron indexed until removed by hand (see westmarch docs/fixes-2026-11-05.md, item 2).",
+  "claims": [
+   {
+    "text": "A presented repo is 0x<owner>/<repo> for one publisher's or a bare name for any publisher's.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "The view is documented to drop a repo the app stops presenting on the next run.",
+    "cites": [
+     1
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/view.js",
+    "excerpt": "for one publisher's, a bare name for any publisher's), at their latest heads",
+    "sha256": "2672b16e6a868109b3e319c43e9ac8135d574c906dca6a8362dff2512fb0f890",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/view.js",
+    "excerpt": "A repo the app stops presenting loses its domain on the next run.",
+    "sha256": "2672b16e6a868109b3e319c43e9ac8135d574c906dca6a8362dff2512fb0f890",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   }
+  ],
+  "created_at": "2026-11-06T00:32:00Z",
+  "valid_for": "P60D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "cloudflare-workers",
+   "mcp",
+   "indexer",
+   "fangorn-wiki"
+  ],
+  "question": "What does a Fangorn app's Cloudflare Worker do?",
+  "statement": "One Worker is the app's indexer (a cron following the chain into R2), its view (/view), its MCP server (POST /mcp) and its static site; it sells nothing itself",
+  "argument": "On the free tier an app is a single Cloudflare Worker. Its cron follows the on-chain update log from where it left off and runs the embedding lens over every presented repo whose head moved, writing the view to R2. GET /view serves that view (catalog, manifests, content-named shards); POST /mcp serves it as MCP tools (describe, search, get, similar, count, browse, threads) over streamable HTTP; anything else is the static site and card. With paid records it only quotes a publisher's signed terms over x402: keys come from the key server, so nothing secret passes through the Worker.",
+  "claims": [
+   {
+    "text": "The cron follows the update log from where it left off.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "POST /mcp serves the view as MCP tools.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "The app sells nothing of its own; it only quotes publishers' terms.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/site/worker.js",
+    "excerpt": "the indexer. Follows the update log from where it left off",
+    "sha256": "e1bc37c4e4d3241961c137c48a08d18b716854a00aa44eb9b988ee41c1f2a58e",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/site/worker.js",
+    "excerpt": "the view as MCP tools (describe, search, get, similar, count, browse,",
+    "sha256": "e1bc37c4e4d3241961c137c48a08d18b716854a00aa44eb9b988ee41c1f2a58e",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/site/worker.js",
+    "excerpt": "The app sells nothing of its own.",
+    "sha256": "e1bc37c4e4d3241961c137c48a08d18b716854a00aa44eb9b988ee41c1f2a58e",
+    "retrieved_at": "2026-11-06T00:02:23Z"
+   }
+  ],
+  "created_at": "2026-11-06T00:33:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "embeddings",
+   "embeddinggemma",
+   "search",
+   "fangorn-wiki"
+  ],
+  "question": "Which embedding model does westmarch use, and why can't I mix vectors?",
+  "statement": "westmarch embeds with EmbeddingGemma-300m, Matryoshka-truncated to 256 dims and L2-normalized (q8 by default); a view refuses vectors from another encoder",
+  "argument": "Records and queries are embedded by EmbeddingGemma-300m with asymmetric prompts (query vs document), truncated to 256 dimensions and normalized. The document side runs q8 in transformers.js by default, matching the browser's queries. Two runtimes of the same model agree closely but not bit for bit, so each manifest names its embedder and westmarch refuses to append to a view another encoder built: vectors from fastembed fp32 or another model are a different encoder.",
+  "claims": [
+   {
+    "text": "The model is EmbeddingGemma-300m, asymmetric by prompt, truncated to 256 dims.",
+    "cites": [
+     0,
+     1
+    ]
+   },
+   {
+    "text": "A view refuses to append vectors another encoder built.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/core/embed.js",
+    "excerpt": "EmbeddingGemma-300m, asymmetric by prompt (QUERY / DOCUMENT below), truncated",
+    "sha256": "d3a9f71d156adf59f8c323dae3d57c2e3ab15305876f786dc377ef1730829e59",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/core/embed.js",
+    "excerpt": "const DIM = 256;",
+    "sha256": "d3a9f71d156adf59f8c323dae3d57c2e3ab15305876f786dc377ef1730829e59",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/view.js",
+    "excerpt": "so the manifest names its `embedder` and this refuses to append to a view another encoder built.",
+    "sha256": "2672b16e6a868109b3e319c43e9ac8135d574c906dca6a8362dff2512fb0f890",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   }
+  ],
+  "created_at": "2026-11-06T00:34:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "westmarch-eval",
+   "golden",
+   "testing",
+   "fangorn-wiki"
+  ],
+  "question": "How does westmarch-eval grade an app?",
+  "statement": "westmarch-eval grades the recipe, never the data, with the reader's own search code; golden.jsonl checks are data so an agent's change can't edit its own grading",
+  "argument": "westmarch-eval answers whether a view answers what its app says it should. It grades how records are shaped and ranked: build a base view (main's recipe) and a candidate from the same records and compare; new records are facts and never make a view worse. Every check runs the same search agents get through fangorn-mcp. Checks live in eval/golden.jsonl, one per line: search (share of top 5 satisfying expect), count (rows a filter reaches), records (% of rows matching, lower is better; hard ones fail on any rise), coverage (share of listed values present). Being data rather than code, a proposed change can't also change how it is graded.",
+  "claims": [
+   {
+    "text": "It grades the recipe, never the data.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "golden.jsonl is data, so a change proposed by an agent cannot also edit how it is graded.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "Every check runs the reader's own search code.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/eval.ts",
+    "excerpt": "It grades the RECIPE — how records are shaped, which fields are embedded, how rows rank — never the data.",
+    "sha256": "0dc3c467a5b1ad559346a45170216df325c9bf1ed8088826273393e95e3aa823",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/eval.ts",
+    "excerpt": "It is data, not code, so a change proposed by an agent cannot also edit how it is graded",
+    "sha256": "0dc3c467a5b1ad559346a45170216df325c9bf1ed8088826273393e95e3aa823",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/eval.ts",
+    "excerpt": "Every check runs the reader's own code",
+    "sha256": "0dc3c467a5b1ad559346a45170216df325c9bf1ed8088826273393e95e3aa823",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   }
+  ],
+  "created_at": "2026-11-06T00:35:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "claim",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "where",
+   "filters",
+   "mcp",
+   "fangorn-wiki"
+  ],
+  "question": "How do where filters match in westmarch search and count?",
+  "statement": "westmarch where filters match whole values, case-insensitively: {subject: 'sitcom'} hits 'Sitcom' but 'Sit' matches nothing",
+  "argument": "A where predicate compares a field's whole value without regard to case, never a substring. So an agent echoing a faceted value back with different casing still hits, while 'comedy' doesn't count every 'dark comedy'. Use count (facet) to get the exact values first. Typed browse follows the same rule.",
+  "claims": [
+   {
+    "text": "where matches case-insensitively.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "where matches whole values, not substrings.",
+    "cites": [
+     1
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/agent/tools.js",
+    "excerpt": "where must match case-insensitively",
+    "sha256": "4f74bbd36fd1ff1fd7b9e26e5744bd8f148eeeb4acb323ac0d9a20c71453d96d",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/agent/tools.js",
+    "excerpt": "where must match whole values, not substrings",
+    "sha256": "4f74bbd36fd1ff1fd7b9e26e5744bd8f148eeeb4acb323ac0d9a20c71453d96d",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   }
+  ],
+  "created_at": "2026-11-06T00:36:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ },
+ {
+  "kind": "finding",
+  "subject": "westmarch",
+  "project": "fangorn-network/westmarch",
+  "tags": [
+   "westmarch",
+   "view-format",
+   "shards",
+   "cdn",
+   "fangorn-wiki"
+  ],
+  "question": "What is in a westmarch view on disk, and how do readers verify it?",
+  "statement": "A view is cdn/catalog, a manifest per domain and gzipped NDJSON shards named by hash; rows are {track_id, owner, fields, v} with track_id the record's CID",
+  "argument": "Any reader loads any app's view because the layout is fixed: cdn/catalog lists every domain; cdn/domains/<domain>/manifest holds the role map, presentation, embedder and the shard list with sizes and sha256; shards are shard-NNNN-<sha12>.ndjson.gz. Each row is {track_id, owner, fields, v}: track_id is the record's CID, fields are its payload plus entityType, v the packed vector. The manifest hashes each shard as served (gzipped) and readers refuse a mismatch, which is what lets the files sit behind any CDN; serve them as application/gzip with no Content-Encoding. The view is stateless: each manifest names the head it was built from, so a run where no head moved reads one manifest per repo.",
+  "claims": [
+   {
+    "text": "Rows are {track_id, owner, fields, v}.",
+    "cites": [
+     0
+    ]
+   },
+   {
+    "text": "track_id is the record's CID; fields are payload plus entityType.",
+    "cites": [
+     1
+    ]
+   },
+   {
+    "text": "Each domain's manifest names the head it was built from.",
+    "cites": [
+     2
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/view.js",
+    "excerpt": "row shape {track_id, owner, fields, v}, manifest and catalog keys;",
+    "sha256": "2672b16e6a868109b3e319c43e9ac8135d574c906dca6a8362dff2512fb0f890",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/view.js",
+    "excerpt": "a record is a row: track_id = its CID, fields = payload + entityType (its type);",
+    "sha256": "2672b16e6a868109b3e319c43e9ac8135d574c906dca6a8362dff2512fb0f890",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   },
+   {
+    "type": "url",
+    "ref": "https://raw.githubusercontent.com/fangorn-network/westmarch/4a8a7929df2cd08cdde38c1362445eec41eb1fef/src/publish/view.js",
+    "excerpt": "each domain's manifest names the head it was built from",
+    "sha256": "2672b16e6a868109b3e319c43e9ac8135d574c906dca6a8362dff2512fb0f890",
+    "retrieved_at": "2026-11-06T00:02:24Z"
+   }
+  ],
+  "created_at": "2026-11-06T00:37:00Z",
+  "valid_for": "P90D",
+  "model": "claude-opus-5-5"
+ }
+]

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // dev-intel statements: check, scrub and publish one or more to your own dev-intel-test-0 repo.
-//   node statement.mjs [--dry-run] [--public-repo] draft.json
+//   node statement.mjs [--dry-run] [--public-repo] [--fill] draft.json   (--fill: verify quotes, write sha256 back, publish nothing)
 // draft.json: one statement or an array (shape in SKILL.md). Publishing is public and permanent,
 // and at your own risk: this withholds what it can detect, and you are responsible for the rest.
 // Also imported by the app's seed source, so the owner's records pass the same checks.
@@ -107,6 +107,30 @@ export function deprivatize(d, { repo, owner, words }, publicRepo) {
   return out;
 }
 
+// Whitespace, tags and line-comment markers ignored, so a quote may wrap across comment lines.
+const flat = (s) => s.replace(/^[ \t]*(?:\/\/+|#+|\*+)[ \t]?/gm, "").replace(/<[^>]+>/g, " ").replace(/&nbsp;|&#160;/g, " ").replace(/\s+/g, " ").trim();
+/** Every url excerpt must be on its page as fetched: fills sha256 + retrieved_at, returns the problems.
+ *  Evidence that already has a sha256 was checked when it was written, and is skipped. */
+export async function verifyEvidence(drafts, fetchFn = fetch) {
+  const pages = new Map(), problems = [];
+  for (const d of drafts) for (const e of d.evidence ?? []) {
+    if (e.type !== "url" || !/^https?:\/\//.test(e.ref) || e.sha256 || !e.excerpt) continue;   // nothing quoted, nothing to check
+    if (!pages.has(e.ref)) {
+      // Any HTTP answer is the page as served (an API's 400 can be what was quoted); only no answer fails.
+      const r = await fetchFn(e.ref).catch((x) => ({ arrayBuffer: null, status: x.message }));
+      const buf = r.arrayBuffer ? Buffer.from(await r.arrayBuffer()) : null;
+      pages.set(e.ref, buf && { sha256: sha(buf), text: flat(buf.toString("utf8")) });
+      if (!buf) problems.push(`${e.ref}: not fetched (${r.status})`);
+    }
+    const page = pages.get(e.ref);
+    if (!page) continue;
+    if (e.excerpt && !page.text.includes(flat(e.excerpt))) { problems.push(`${e.ref}: excerpt not on the page: "${e.excerpt.slice(0, 80)}"`); continue; }
+    e.sha256 = page.sha256;
+    e.retrieved_at ??= new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  }
+  return problems;
+}
+
 /** Bring the local copy of <owner>:<ns> in `cwd` to the on-chain tip before committing: another copy
  *  (the app's .ship/repo, another machine, `fangorn card`) may have pushed since. Creates the repo if new. */
 export function syncRepo(cwd, owner, ns, env = process.env, bin = "fangorn") {
@@ -129,7 +153,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const who = spawnSync("fangorn", ["wallet"], { env, encoding: "utf8" }).stdout?.match(/0x[0-9a-fA-F]{40}/)?.[0];
   if (!who) die("no fangorn wallet: npm i -g @fangorn-network/sdk, then fangorn init (see SKILL.md)");
   const names = privateNames();
-  const drafts = [JSON.parse(readFileSync(file, "utf8"))].flat();
+  const raw = JSON.parse(readFileSync(file, "utf8")), drafts = [raw].flat();
+  const problems = await verifyEvidence(drafts);
+  if (problems.length) die(`refused: fix these quotes, don't drop the claims\n  ${problems.join("\n  ")}`);
+  if (flag("--fill")) { writeFileSync(file, JSON.stringify(raw, null, 1) + "\n"); console.log(`verified; sha256 written to ${file}`); process.exit(0); }
   let records;
   try { records = drafts.map((d) => record(deprivatize(d, names, flag("--public-repo")), who)); } catch (e) { die(`refused: ${e.message}`); }
   for (const r of records) console.log(`${r.id}  [${r.payload.kind}] ${r.payload.statement}${r.payload.project ? `  (project: ${r.payload.project})` : ""}`);

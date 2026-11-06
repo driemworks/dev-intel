@@ -9,7 +9,7 @@ import { join, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 import { parseArgs } from "node:util";
 
-import { TYPE, record, syncRepo } from "../plugin/skills/dev-intel/statement.mjs";   // one scrubber and id scheme for owner and publishers
+import { TYPE, record, syncRepo, verifyEvidence } from "../plugin/skills/dev-intel/statement.mjs";   // one scrubber and id scheme for owner and publishers
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const { values: a } = parseArgs({ options: {
@@ -18,8 +18,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     "repo-dir": { type: "string", default: ".ship/repo" }, volume: { type: "string", default: "1" } } });
   for (const k of ["dir", "publisher", "output-dir"]) if (!a[k]) throw new Error(`--${k} is required`);
 
-  const records = readdirSync(a.dir).filter((f) => f.endsWith(".json")).sort()
-    .flatMap((f) => [JSON.parse(readFileSync(join(a.dir, f), "utf8"))].flat().map((d) => record(d, a.publisher)));
+  const drafts = readdirSync(a.dir).filter((f) => f.endsWith(".json")).sort()
+    .flatMap((f) => [JSON.parse(readFileSync(join(a.dir, f), "utf8"))].flat());
+  // Unverified quotes refuse the build; `node plugin/skills/dev-intel/statement.mjs --fill <file>` checks and pins them.
+  const problems = await verifyEvidence(drafts);
+  if (problems.length) throw new Error(`unverified quotes:\n  ${problems.join("\n  ")}`);
+  const records = drafts.map((d) => record(d, a.publisher));
   const ids = new Set();
   for (const r of records) { if (ids.has(r.id)) throw new Error(`duplicate id ${r.id}`); ids.add(r.id); }
 

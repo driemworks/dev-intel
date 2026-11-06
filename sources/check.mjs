@@ -1,6 +1,6 @@
 // npm test: what statement.mjs must withhold or refuse before anything is published.
 import assert from "node:assert/strict";
-import { record, deprivatize } from "../plugin/skills/dev-intel/statement.mjs";
+import { record, deprivatize, verifyEvidence } from "../plugin/skills/dev-intel/statement.mjs";
 const P = "0x" + "1".repeat(40);
 const base = { kind: "decision", statement: "Chose Drizzle over Prisma in acme-billing", argument: "a", created_at: "2026-01-01T00:00:00Z",
   evidence: [{ type: "commit", ref: "acme-billing@abc123" }] };
@@ -19,4 +19,9 @@ assert.ok(!JSON.stringify(priv).match(/acme-billing|acmecorp|tonybox/i), JSON.st
 const pub = deprivatize({ ...base, argument: "on tonybox" }, names, true);
 assert.equal(pub.statement, base.statement, "a public repo keeps its name");
 assert.equal(pub.argument, "on [local]", "this machine's names go either way");
-console.log("statement check ok — secrets, emails, injection, kinds, evidence, stable ids, private repo and local names");
+const page = async () => ({ arrayBuffer: async () => new TextEncoder().encode("// the  cron\n// runs <b>every</b> few minutes").buffer });
+const good = [{ evidence: [{ type: "url", ref: "https://x/a", excerpt: "the cron runs every few minutes" }] }];
+assert.deepEqual(await verifyEvidence(good, page), []); assert.match(good[0].evidence[0].sha256, /^[0-9a-f]{64}$/, "a quote on the page is pinned");
+const bad = [{ evidence: [{ type: "url", ref: "https://x/b", excerpt: "runs hourly" }] }];
+assert.equal((await verifyEvidence(bad, page)).length, 1, "a quote not on the page is refused"); assert.equal(bad[0].evidence[0].sha256, undefined);
+console.log("statement check ok — quotes verified against their page, — secrets, emails, injection, kinds, evidence, stable ids, private repo and local names");
